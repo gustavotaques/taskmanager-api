@@ -1,0 +1,27 @@
+services:
+  # Serviço 1: O Banco de Dados
+  postgres-db:
+    image: postgres:15
+    environment:
+      # Lado Esquerdo: O que o Postgres espera
+      # Lado Direito: A variável que vem do .env
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+
+  # Serviço 2: a sua Aplicação Java
+  app:
+    build: . # Diz para o Docker: "Use o Dockerfile desta pasta para criar a imagem"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres-db # Só inicia depois que o banco subir
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
